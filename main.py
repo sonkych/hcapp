@@ -6,12 +6,12 @@ from form_admin.router import router as form_router
 from tasks.router import router as task_router
 from models.user import Base
 from database import engine
-
+from config import config
 
 Base.metadata.create_all(bind=engine)
 
 
-app = FastAPI(title="HCApp")
+app = FastAPI(title=config().app_name)
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(user_router, tags=["user"])
 app.include_router(form_router, prefix="/forms", tags=["form_admin"])
