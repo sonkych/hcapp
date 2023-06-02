@@ -11,9 +11,9 @@ class User(BaseModel):
     firstname: str
     lastname: str
     phone: str
-    telegram: str
-    department: str
-    position: str
+    telegram: Optional[str]
+    department: Optional[str]
+    position: Optional[str]
 
     class Config:
         orm_mode = True

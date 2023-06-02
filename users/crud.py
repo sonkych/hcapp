@@ -1,9 +1,13 @@
-from fastapi import HTTPException, status
+from typing import Type
+
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
 from auth.schemas import NewAccountForm
-from users.schemas import UserCreate, UserUpdate
 from models.user import User as UserModel, Account
-from users.utils import user_to_dict, get_password_hash, verify_password
+from responses import *
+from users.schemas import UserCreate, UserUpdate
+from users.utils import *
 
 
 def get_account(db: Session, account_id: int):
@@ -26,7 +30,7 @@ def create_account(db: Session, new_account: NewAccountForm):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return user_to_dict(db_user)
+    return success_response({"user": user_to_dict(db_user), "token": get_bearer_token(db_user)})
 
 
 def get_user(db: Session, user_id: int):
@@ -44,11 +48,11 @@ def get_user_by_email(db: Session, email: str):
 def authenticate_user(db: Session, email: str, password: str):
     user = get_user_by_email(db, email=email)
     if not user or not verify_password(password, user.hashed_password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
-    return user
+        return error_response("Incorrect email or password", 401)
+    return success_response({"user": user_to_dict(user), "token": get_bearer_token(user)})
 
 
-def get_users(db: Session, skip: int = 0, limit: int = 100) -> UserModel:
+def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[Type[User]]:
     return db.query(UserModel).offset(skip).limit(limit).all()
 
 

@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import ValidationError
-from database import get_db
-from auth.schemas import LoginForm, NewAccountForm
-from users.schemas import User
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from database import SessionLocal
+
+from auth.schemas import LoginForm, NewAccountForm
+from database import get_db
+from responses import *
 from users import crud
 
 router = APIRouter()
@@ -19,23 +18,9 @@ router = APIRouter()
 #         db.close()
 
 
-@router.post("/sign-in")
+@router.post("/sign-in", response_model=AuthSuccessResponse)
 def sign_in(login_form: LoginForm, db: Session = Depends(get_db)):
-    db_user = crud.authenticate_user(db, login_form.email, login_form.password)
-    if db_user:
-        return {"status": 200, "user": db_user}
-    else:
-        raise HTTPException(status_code=500, detail="Authentication Error")
-
-    # Working code, first version without autenticate_user func
-    # db_user = crud.get_user_by_email(db, email=login_form.email)
-    # if db_user:
-    #     if db_user.hashed_password == login_form.password + "notreallyhashed":
-    #         return {"status": 200, "user": db_user}
-    #     else:
-    #         raise HTTPException(status_code=404, detail="Wrong Password")
-    # else:
-    #     raise HTTPException(status_code=404, detail="Wrong username")
+    return crud.authenticate_user(db, login_form.email, login_form.password)
 
 
 @router.get("/sign-out")
@@ -48,14 +33,9 @@ def recover_password():
     return {"message": "Check Your you email for further details"}
 
 
-@router.post("/sign-up", response_model=User)
+@router.post("/sign-up", response_model=AuthSuccessResponse)
 def create_account(register_form: NewAccountForm, db: Session = Depends(get_db)):
     db_account = crud.get_user_by_email(db, email=register_form.email)
     if db_account:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        return error_response("Email already registered", 400)
     return crud.create_account(db=db, new_account=register_form)
-
-
-
-
-
