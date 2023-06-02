@@ -10,6 +10,7 @@ def config():
 
 class Settings(BaseSettings):
     app_name: str
+    app_key: str
     db_host: str
     db_port: str
     db_database: str

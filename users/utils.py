@@ -1,13 +1,10 @@
 from passlib.context import CryptContext
 from models.user import User
 from datetime import datetime, timedelta
+from config import config
 import jwt
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-SECRET_KEY = "your-secret-key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 300
 
 
 def user_to_dict(db_user):
@@ -35,9 +32,8 @@ def verify_password(plain_password, hashed_password):
 
 def get_bearer_token(user: User):
     data = {"sub": user.email}
-    expires_delta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expires_delta = timedelta(minutes=300)
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, config().app_key, algorithm="HS256")
