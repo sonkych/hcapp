@@ -1,30 +1,24 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from auth.schemas import LoginForm, NewAccountForm
-from database import get_db
 from responses import *
 from users import crud
+from users.utils import get_auth_user_id, revoke_bearer_token
+
 
 router = APIRouter()
-
-
-# # Dependency
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
+security = HTTPBearer()
 
 
 @router.post("/sign-in", response_model=AuthSuccessResponse)
-def sign_in(login_form: LoginForm, db: Session = Depends(get_db)):
-    return crud.authenticate_user(db, login_form.email, login_form.password)
+def sign_in(login_form: LoginForm):
+    return crud.authenticate_user(login_form.email, login_form.password)
 
 
 @router.get("/sign-out")
-def logout():
+def logout(auth_user_id=Depends(get_auth_user_id), credentials: HTTPAuthorizationCredentials = Depends(security)):
+    revoke_bearer_token(credentials)
     return {"message": "Logged out successfully"}
 
 
@@ -34,8 +28,8 @@ def recover_password():
 
 
 @router.post("/sign-up", response_model=AuthSuccessResponse)
-def create_account(register_form: NewAccountForm, db: Session = Depends(get_db)):
-    db_account = crud.get_user_by_email(db, email=register_form.email)
+def create_account(register_form: NewAccountForm):
+    db_account = crud.get_user_by_email(email=register_form.email)
     if db_account:
         return error_response("Email already registered", 400)
-    return crud.create_account(db=db, new_account=register_form)
+    return crud.create_account(new_account=register_form)

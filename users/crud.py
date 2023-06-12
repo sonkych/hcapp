@@ -1,25 +1,23 @@
-from typing import Type
-
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
-
 from auth.schemas import NewAccountForm
-from models.user import User as UserModel, Account
-from responses import *
+from database import get_db
+from models.user import User as UserModel, Account, User
 from users.schemas import UserCreate, UserUpdate
-from users.utils import *
+from users.utils import user_to_dict, get_password_hash, get_bearer_token, verify_password
+from responses import error_response, success_response
+
+DB = next(get_db())
 
 
-def get_account(db: Session, account_id: int):
-    return db.query(UserModel).filter(Account.id == account_id).first()
+def get_account(account_id: int):
+    return DB.query(UserModel).filter(Account.id == account_id).first()
 
 
-def create_account(db: Session, new_account: NewAccountForm):
+def create_account(new_account: NewAccountForm):
     hashed_password = get_password_hash(new_account.password)
 
     db_company = Account(company_name=new_account.company_name)
-    db.add(db_company)
-    db.commit()
+    DB.add(db_company)
+    DB.commit()
 
     db_user = UserModel(company_id=db_company.id,
                         email=new_account.email,
@@ -27,36 +25,36 @@ def create_account(db: Session, new_account: NewAccountForm):
                         firstname=new_account.firstname,
                         lastname=new_account.lastname,
                         phone=new_account.phone)
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    DB.add(db_user)
+    DB.commit()
+    DB.refresh(db_user)
     return success_response({"user": user_to_dict(db_user), "token": get_bearer_token(db_user)})
 
 
-def get_user(db: Session, user_id: int):
-    db_user = db.query(UserModel).filter(UserModel.id == user_id).first()
+def get_user(user_id: int):
+    db_user = DB.query(UserModel).filter(UserModel.id == user_id).first()
     if db_user:
         return user_to_dict(db_user)
-    else:
-        raise HTTPException(status_code=404, detail="User not found")
+    return error_response("User not found", 404)
 
 
-def get_user_by_email(db: Session, email: str):
-    return db.query(UserModel).filter(UserModel.email == email).first()
+def get_user_by_email(email: str):
+    return DB.query(UserModel).filter(UserModel.email == email).first()
 
 
-def authenticate_user(db: Session, email: str, password: str):
-    user = get_user_by_email(db, email=email)
+def authenticate_user(email: str, password: str):
+    user = get_user_by_email(email=email)
     if not user or not verify_password(password, user.hashed_password):
         return error_response("Incorrect email or password", 401)
     return success_response({"user": user_to_dict(user), "token": get_bearer_token(user)})
 
 
-def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[Type[User]]:
-    return db.query(UserModel).offset(skip).limit(limit).all()
+def get_users(auth_user, skip: int = 0, limit: int = 100) -> list[dict]:
+    users = DB.query(UserModel).filter(UserModel.company_id == auth_user['company_id']).offset(skip).limit(limit).all()
+    return list(map(user_to_dict, users))
 
 
-def create_user(db: Session, new_user: UserCreate):
+def create_user(new_user: UserCreate):
     hashed_password = get_password_hash(new_user.password)
     new_user_dict = new_user.dict()
     del new_user_dict['password']  # Remove the password field
@@ -75,35 +73,35 @@ def create_user(db: Session, new_user: UserCreate):
     #                     department=new_user.department,
     #                     position=new_user.position)
 
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    DB.add(db_user)
+    DB.commit()
+    DB.refresh(db_user)
     return user_to_dict(db_user)
 
 
-def update_user(user_id: int, updated_data: UserUpdate, db: Session):
-    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+def update_user(user_id: int, updated_data: UserUpdate):
+    user = DB.query(UserModel).filter(UserModel.id == user_id).first()
     if user:
         # Check if the updated email already exists for another user
-        if updated_data.email != user.email and db.query(UserModel).filter(
+        if updated_data.email != user.email and DB.query(UserModel).filter(
                 UserModel.email == updated_data.email).first():
-            raise HTTPException(status_code=400, detail="Email already registered")
+            return error_response("Email already registered", 400)
 
         # Update only the specified fields
         for field, value in updated_data.dict(exclude_unset=True).items():
             setattr(user, field, value)
 
-        db.commit()
-        db.refresh(user)
+        DB.commit()
+        DB.refresh(user)
         return user
     return None
 
 
-def delete_user(user_id: int, db: Session):
-    db_user = db.query(UserModel).filter(UserModel.id == user_id).first()
+def delete_user(user_id: int):
+    db_user = DB.query(UserModel).filter(UserModel.id == user_id).first()
     if db_user:
-        db.delete(db_user)
-        db.commit()
+        DB.delete(db_user)
+        DB.commit()
         return True
     else:
         return False

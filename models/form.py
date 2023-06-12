@@ -1,11 +1,8 @@
 from sqlalchemy import Column, Boolean, Integer, String, ForeignKey, JSON
-from sqlalchemy.ext.declarative import declarative_base
+from models.model import BaseModel
 
 
-Base = declarative_base()
-
-
-class Form(Base):
+class Form(BaseModel):
     __tablename__ = "form"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True)
@@ -18,7 +15,7 @@ class Form(Base):
     extensions = Column(JSON)
 
 
-class FormField(Base):
+class FormField(BaseModel):
     __tablename__ = "formfield"
 
     form_id = Column(Integer, ForeignKey("form.id"))

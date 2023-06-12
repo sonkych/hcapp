@@ -1,3 +1,4 @@
+from typing import List, Type
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 
@@ -43,3 +44,7 @@ class UserWithTokenResponse(BaseModel):
 
 class AuthSuccessResponse(Response):
     data: UserWithTokenResponse
+
+
+class GetUsersResponse(Response):
+    data: List[UserResponse]

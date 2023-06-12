@@ -4,9 +4,12 @@ from auth.router import router as auth_router
 from users.router import router as user_router
 from form_admin.router import router as form_router
 from tasks.router import router as task_router
-from models.user import Base
+from models.model import Base
 from database import engine
 from config import config
+from models.user import User
+from models.auth_token import AuthToken
+from models.form import Form
 
 Base.metadata.create_all(bind=engine)
 
