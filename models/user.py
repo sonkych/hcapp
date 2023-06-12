@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Boolean, Integer, String, ForeignKey, JSON
 from models.model import BaseModel
+from sqlalchemy.orm import relationship
+from models.role import user_role
 
 
 class Account(BaseModel):
@@ -21,4 +23,5 @@ class User(BaseModel):
     department = Column(String, nullable=True)
     position = Column(String, nullable=True)
     hashed_password = Column(String)
+    roles = relationship('RoleModel', secondary=user_role, back_populates='users')
 

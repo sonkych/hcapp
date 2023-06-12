@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from auth.schemas import LoginForm, NewAccountForm
+from models.role import ROLE_ADMIN
 from responses import *
 from users import crud
 from users.utils import get_auth_user_id, revoke_bearer_token
@@ -32,4 +33,4 @@ def create_account(register_form: NewAccountForm):
     db_account = crud.get_user_by_email(email=register_form.email)
     if db_account:
         return error_response("Email already registered", 400)
-    return crud.create_account(new_account=register_form)
+    return crud.create_account(new_account=register_form, role=ROLE_ADMIN)

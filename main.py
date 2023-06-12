@@ -1,3 +1,4 @@
+import sys
 import logging
 from fastapi import FastAPI
 from auth.router import router as auth_router
@@ -33,4 +34,11 @@ logging.basicConfig(
 
 # Log a message
 logger = logging.getLogger(__name__)
-logger.info("Application starting...")
+
+if "--db_seed" in sys.argv:
+    logger.info("Database seeding...")
+    from seeders.db_seeder import seed
+    seed()
+else:
+    logger.info("Application starting...")
+

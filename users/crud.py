@@ -4,6 +4,7 @@ from models.user import User as UserModel, Account, User
 from users.schemas import UserCreate, UserUpdate
 from users.utils import user_to_dict, get_password_hash, get_bearer_token, verify_password
 from responses import error_response, success_response
+from models.role import ROLE_USER, RoleModel
 
 DB = next(get_db())
 
@@ -12,7 +13,9 @@ def get_account(account_id: int):
     return DB.query(UserModel).filter(Account.id == account_id).first()
 
 
-def create_account(new_account: NewAccountForm):
+def create_account(new_account: NewAccountForm, role=ROLE_USER):
+    role_id = DB.query(RoleModel).filter(RoleModel.name == role).first()
+
     hashed_password = get_password_hash(new_account.password)
 
     db_company = Account(company_name=new_account.company_name)
@@ -24,7 +27,8 @@ def create_account(new_account: NewAccountForm):
                         hashed_password=hashed_password,
                         firstname=new_account.firstname,
                         lastname=new_account.lastname,
-                        phone=new_account.phone)
+                        phone=new_account.phone,
+                        roles=[role_id])
     DB.add(db_user)
     DB.commit()
     DB.refresh(db_user)
