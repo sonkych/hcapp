@@ -9,7 +9,7 @@ from users.schemas import User, UserCreate, UserUpdate
 router = APIRouter()
 
 
-@router.get("/users", response_model=GetUsersResponse)
+@router.get("/users", response_model=GetUsersResponse, include_in_schema=False)
 def read_users(auth_user_id=Depends(get_auth_user_id)):
     if not isinstance(auth_user_id, int):
         return auth_user_id
@@ -21,8 +21,10 @@ def read_users(auth_user_id=Depends(get_auth_user_id)):
         raise HTTPException(status_code=500, detail="Validation error occurred")
 
 
-@router.post("/new-user", response_model=User)
-def create_user(register_form: UserCreate):
+@router.post("/users/create", response_model=User, include_in_schema=False)
+def create_user(register_form: UserCreate, auth_user_id=Depends(get_auth_user_id)):
+    if not isinstance(auth_user_id, int):
+        return auth_user_id
     db_user = crud.get_user_by_email(email=register_form.email)
     db_account = crud.get_account(account_id=register_form.company_id)
     if db_user:
@@ -34,12 +36,12 @@ def create_user(register_form: UserCreate):
     return crud.create_user(new_user=register_form)
 
 
-@router.get("/users/{user_id}", response_model=User)
+@router.get("/users/{user_id}", response_model=User, include_in_schema=False)
 def read_user(user_id: int):
     return crud.get_user(user_id=user_id)
 
 
-@router.patch("/users/{user_id}", response_model=User)
+@router.patch("/users/{user_id}", response_model=User, include_in_schema=False)
 def update_user(user_id: int, updated_data: UserUpdate):
     db_user = crud.update_user(user_id=user_id, updated_data=updated_data)
     if not db_user:
@@ -47,7 +49,7 @@ def update_user(user_id: int, updated_data: UserUpdate):
     return db_user
 
 
-@router.delete("/users/{user_id}")
+@router.delete("/users/{user_id}", include_in_schema=False)
 def delete_user(user_id: int):
     deleted = crud.delete_user(user_id=user_id)
     if not deleted:

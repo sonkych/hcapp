@@ -6,27 +6,27 @@ from form_admin.schemas import Form as FormSchema, CreateForm, FormSettings, Rou
 router = APIRouter()
 
 
-@router.get("/", response_model=List[FormSchema])
+@router.get("/", response_model=List[FormSchema], include_in_schema=False)
 def all_forms_page():
     pass
 
 
-@router.post("/new-form", response_model=CreateForm)
+@router.post("/new-form", response_model=CreateForm, include_in_schema=False)
 def create_form():
     pass
 
 
-@router.get("/{form_id}", response_model=FormSchema)
+@router.get("/{form_id}", response_model=FormSchema, include_in_schema=False)
 def read_form():
     pass
 
 
-@router.delete("/{form_id}")
+@router.delete("/{form_id}", include_in_schema=False)
 def delete_form(form_id: int):
     return {"status": 200, "message": "Form deleted"}
 
 
-@router.get("/{form_id}/settings", response_model=FormSettings)
+@router.get("/{form_id}/settings", response_model=FormSettings, include_in_schema=False)
 def read_form_settings(form_id: int):
     return {
               "name": "Orders",
@@ -40,12 +40,12 @@ def read_form_settings(form_id: int):
             }
 
 
-@router.put("/{form_id}/settings", response_model=FormSettings)
+@router.put("/{form_id}/settings", response_model=FormSettings, include_in_schema=False)
 def update_form_settings(form_id: int):
     return read_form_settings(form_id)
 
 
-@router.get("/{form_id}/template", response_model=FormTemplate)
+@router.get("/{form_id}/template", response_model=FormTemplate, include_in_schema=False)
 def read_form_template():
     return {
         "fields": [
@@ -62,7 +62,7 @@ def read_form_template():
     }
 
 
-@router.post("/{form_id}/template", response_model=FormTemplateCreate)
+@router.post("/{form_id}/template", response_model=FormTemplateCreate, include_in_schema=False)
 def create_form_template():
     return {
         "fields": [
@@ -71,22 +71,22 @@ def create_form_template():
     }
 
 
-@router.put("/{form_id}/template")
+@router.put("/{form_id}/template", include_in_schema=False)
 def update_form_template():
     pass
 
 
-@router.get("/{form_id}/access")
+@router.get("/{form_id}/access", include_in_schema=False)
 def read_form_access():
     pass
 
 
-@router.put("/{form_id}/access")
+@router.put("/{form_id}/access", include_in_schema=False)
 def update_form_access():
     pass
 
 
-@router.get("/{form_id}/routes", response_model=Route)
+@router.get("/{form_id}/routes", response_model=Route, include_in_schema=False)
 def read_form_routes(form_id: int):
     return {
             "steps": [
@@ -104,17 +104,17 @@ def read_form_routes(form_id: int):
             }
 
 
-@router.put("/{form_id}/routes", response_model=Route)
+@router.put("/{form_id}/routes", response_model=Route, include_in_schema=False)
 def update_form_routes(form_id: int):
     return {"status": 200, "message": "Routes updated successfully"}
 
 
-@router.get("/{form_id}/extensions")
+@router.get("/{form_id}/extensions", include_in_schema=False)
 def read_form_extensions():
     pass
 
 
-@router.put("/{form_id}/extensions")
+@router.put("/{form_id}/extensions", include_in_schema=False)
 def update_form_extensions():
     pass
 
