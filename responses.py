@@ -42,9 +42,21 @@ class UserWithTokenResponse(BaseModel):
     token: str
 
 
+class UserAccountResponse(BaseModel):
+    user: UserResponse
+
+
 class AuthSuccessResponse(Response):
     data: UserWithTokenResponse
 
 
 class GetUsersResponse(Response):
     data: List[UserResponse]
+
+
+class UserSuccessResponse(Response):
+    data: UserAccountResponse
+
+
+class StringResponse(Response):
+    data: str = 'ok'

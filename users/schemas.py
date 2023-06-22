@@ -24,7 +24,7 @@ class UserInDB(User):
 
 
 class UserCreate(BaseModel):
-    company_id: int
+    # company_id: int
     email: EmailStr
     firstname: str
     lastname: str
@@ -66,18 +66,20 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    email: EmailStr
-    firstname: str
-    lastname: str
-    phone: str = Field(..., min_length=6, max_length=15, description="+37256000000")  # Phone number pattern (e.g., +37256669625)
-    telegram: str = Field(max_length=32)
-    department: str
-    position: str
+    email: EmailStr | None
+    firstname: str | None
+    lastname: str | None
+    phone: str | None #= Field(..., min_length=6, max_length=15, description="+37256000000")  # Phone number pattern (e.g., +37256669625)
+    telegram: str | None #= Field(max_length=32)
+    department: str | None
+    position: str | None
 
     @validator('phone')
     def validate_phone(cls, phone):
         # Custom validation logic for the phone number
         # You can add additional checks or customize the validation as per your requirements
+        if phone is None:
+            return phone
         if not re.match(r'^\+\d{1,3}\d+$', phone):
             raise ValueError('Invalid phone format')
         return phone

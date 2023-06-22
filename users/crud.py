@@ -58,29 +58,18 @@ def get_users(auth_user, skip: int = 0, limit: int = 100) -> list[dict]:
     return list(map(user_to_dict, users))
 
 
-def create_user(new_user: UserCreate):
-    hashed_password = get_password_hash(new_user.password)
-    new_user_dict = new_user.dict()
-    del new_user_dict['password']  # Remove the password field
-    print(new_user_dict)
-    new_user_dict["hashed_password"] = hashed_password
-    db_user = UserModel(**new_user_dict)
-
-    # First version of this code:
-    # db_user = UserModel(company_id=new_user.company_id,
-    #                     email=new_user.email,
-    #                     hashed_password=fake_hashed_password,
-    #                     firstname=new_user.firstname,
-    #                     lastname=new_user.lastname,
-    #                     phone=new_user.phone,
-    #                     telegram=new_user.telegram,
-    #                     department=new_user.department,
-    #                     position=new_user.position)
+def create_user(new_user: dict):
+    hashed_password = get_password_hash(new_user['password'])
+    del new_user['password']  # Remove the password field
+    new_user["hashed_password"] = hashed_password
+    role_id = DB.query(RoleModel).filter(RoleModel.name == ROLE_USER).first()
+    new_user['roles'] = [role_id]
+    db_user = UserModel(**new_user)
 
     DB.add(db_user)
     DB.commit()
     DB.refresh(db_user)
-    return user_to_dict(db_user)
+    return success_response({"user": user_to_dict(db_user)})
 
 
 def update_user(user_id: int, updated_data: UserUpdate):
