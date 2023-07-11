@@ -2,6 +2,7 @@ import sys
 import logging
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from auth.router import router as auth_router
 from users.router import router as user_router
@@ -17,6 +18,19 @@ from models.form import Form
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title=config().app_name)
+
+origins = [
+    "http://5.45.125.9",
+    "http://localhost:8000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/", include_in_schema=False)
