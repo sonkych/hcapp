@@ -53,7 +53,7 @@ def get_bearer_token(user: User):
 
     DB.add(auth_token)
     DB.commit()
-    return token
+    return auth_token
 
 
 def revoke_bearer_token(credentials: HTTPAuthorizationCredentials = Depends(security)):

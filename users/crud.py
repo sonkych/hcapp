@@ -32,7 +32,8 @@ def create_account(new_account: NewAccountForm, role=ROLE_USER):
     DB.add(db_user)
     DB.commit()
     DB.refresh(db_user)
-    return success_response({"user": user_to_dict(db_user), "token": get_bearer_token(db_user)})
+    auth_token = get_bearer_token(db_user)
+    return success_response({"user": user_to_dict(db_user), "token": auth_token.token, "token_expire_at": auth_token.expired_at})
 
 
 def get_user(user_id: int):
@@ -50,7 +51,8 @@ def authenticate_user(email: str, password: str):
     user = get_user_by_email(email=email)
     if not user or not verify_password(password, user.hashed_password):
         return error_response("Incorrect email or password", 401)
-    return success_response({"user": user_to_dict(user), "token": get_bearer_token(user)})
+    auth_token = get_bearer_token(user)
+    return success_response({"user": user_to_dict(user), "token": auth_token.token, "token_expire_at": auth_token.expired_at})
 
 
 def get_users(auth_user, skip: int = 0, limit: int = 100) -> list[dict]:

@@ -40,6 +40,7 @@ class UserResponse(BaseModel):
 class UserWithTokenResponse(BaseModel):
     user: UserResponse
     token: str
+    token_expire_at: str = "2023-07-13T13:20:21"
 
 
 class UserAccountResponse(BaseModel):
