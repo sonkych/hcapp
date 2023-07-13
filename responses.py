@@ -52,6 +52,10 @@ class AuthSuccessResponse(Response):
     data: UserWithTokenResponse
 
 
+class LogoutResponse(Response):
+    data: str = "Logged out successfully"
+
+
 class GetUsersResponse(Response):
     data: List[UserResponse]
 

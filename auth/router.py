@@ -17,10 +17,10 @@ def sign_in(login_form: LoginForm):
     return crud.authenticate_user(login_form.email, login_form.password)
 
 
-@router.post("/sign-out")
+@router.post("/sign-out", response_model=LogoutResponse)
 def logout(auth_user_id=Depends(get_auth_user_id), credentials: HTTPAuthorizationCredentials = Depends(security)):
     revoke_bearer_token(credentials)
-    return {"message": "Logged out successfully"}
+    return success_response("Logged out successfully")
 
 
 @router.post("/recover")
